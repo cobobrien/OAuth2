@@ -2,7 +2,7 @@ import logging
 from django.urls import reverse
 from oauth2_provider.models import get_application_model
 from oauth2_provider.settings import oauth2_settings
-from django.test import RequestFactory, TestCase
+from django.test import TestCase
 import json
 
 logger = logging.getLogger(__name__)
@@ -24,7 +24,7 @@ class BaseTest(TestCase):
         self.application.delete()
 
 class TestUserTokenView(BaseTest):
-    access_token = None
+
     def test_get_token(self):
         """
         Register User and get initial access token
@@ -45,7 +45,7 @@ class TestUserTokenView(BaseTest):
         self.assertEqual(content["scope"], "read write")
         self.assertEqual(content["expires_in"], oauth2_settings.ACCESS_TOKEN_EXPIRE_SECONDS)
 
-    def test_bad_credentials(self):
+    def test_invalid_credentials(self):
         """
         Login user request with invalid password
         """
@@ -66,7 +66,7 @@ class TestUserTokenView(BaseTest):
         response = self.client.post(reverse("login"), data=token_request_data, **auth_headers)
         self.assertEqual(response.status_code, 400)
 
-    def test_good_credentials(self):
+    def test_valid_credentials(self):
         """
         Login user request with valid password
         """
@@ -116,5 +116,50 @@ class TestUserTokenView(BaseTest):
         self.assertEqual(content["scope"], "read write")
         self.assertEqual(content["expires_in"], oauth2_settings.ACCESS_TOKEN_EXPIRE_SECONDS)
 
+    def test_refresh_token_with_acess_token(self):
+        """
+            Test refresh token view with incorrect token
+        """
+        token_request_data = {
+            "username": "test_user",
+            "password": "123456",
+        }
+        auth_headers = get_basic_auth_header(self.application.client_id, self.application.client_secret)
 
+        response = self.client.post(reverse("register"), data=token_request_data, **auth_headers)
+        content = json.loads(response.content.decode("utf-8"))
+        access_token = content['access_token']
+        logger.info("ACCESS TOKEN: {}".format(access_token))
+        token_request_data = {
+            "refresh_token": access_token,
+        }
+        auth_headers = get_basic_auth_header(self.application.client_id, self.application.client_secret)
+
+        response = self.client.post(reverse("refresh"), data=token_request_data, **auth_headers)
+        logger.info("Test Response: {}".format(response))
+        self.assertEqual(response.status_code, 400)
+
+    def test_revoke_token(self):
+        """
+           Test revoke token view
+        """
+        token_request_data = {
+            "username": "test_user",
+            "password": "123456",
+        }
+        auth_headers = get_basic_auth_header(self.application.client_id, self.application.client_secret)
+
+        response = self.client.post(reverse("register"), data=token_request_data, **auth_headers)
+        content = json.loads(response.content.decode("utf-8"))
+        access_token = content['access_token']
+        token_request_data = {
+            "token": access_token,
+        }
+        auth_headers = get_basic_auth_header(self.application.client_id, self.application.client_secret)
+
+        response = self.client.post(reverse("revoke"), data=token_request_data, **auth_headers)
+        reponseJSON = response.json()
+        logger.info("Test Response: {}".format(reponseJSON))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(reponseJSON['message'], "token revoked")
 

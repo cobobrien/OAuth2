@@ -6,5 +6,5 @@ urlpatterns = [
     path('register/', views.register, name='register'),
     path('token/', views.token, name='login'),
     path('token/refresh/', views.refresh_token, name='refresh'),
-    path('token/revoke/', views.revoke_token),
+    path('token/revoke/', views.revoke_token, name='revoke'),
 ]
