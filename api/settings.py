@@ -24,7 +24,7 @@ SECRET_KEY = '#nisqgw6hbuwjf3ck*a22*n1%u_-a5()f9=(r7yad4d!vug1vy'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['secret-plateau-34662.herokuapp.com']
 
 
 # Application definition
