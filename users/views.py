@@ -16,10 +16,10 @@ CLIENT_SECRET = 'w09cYxgLW4k4ix9njUeRi8YURP3EUHpzIRX9G0Xz8mbMYYCMfSpAqVTtoaMxZbU
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def register(request):
-    '''
+    """
     Register - registers user to the server. Input should be in the format:
     {"username": "username", "password": "1234abcd"}
-    '''
+    """
 
     serializer = CreateUserSerializer(data=request.data)
     logger.info("Request Data: {}".format(request.data))
@@ -44,10 +44,10 @@ def register(request):
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def token(request):
-    '''
+    """
     Login - get tokens with username and password. Input should be in the format:
     {"username": "username", "password": "1234abcd"}
-    '''
+    """
 
     data={
         'grant_type': 'password',
@@ -65,10 +65,10 @@ def token(request):
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def refresh_token(request):
-    '''
+    """
     Get refresh-token for long-term access:
     {"refresh_token": "<token>"}
-    '''
+    """
 
     data={
         'grant_type': 'refresh_token',
@@ -86,10 +86,10 @@ def refresh_token(request):
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def revoke_token(request):
-    '''
-    Logout - revoke tokens.
+    """
+        Logout - revoke tokens.
     {"token": "<token>"}
-    '''
+    """
 
     data={
         'token': request.data['token'],
@@ -99,7 +99,7 @@ def revoke_token(request):
     http_request = convert_to_http_request(request, data)
     revoke_token = RevokeTokenView()
     view_response = revoke_token.post(request=http_request)
-
+    logger.info("Revoke Token Response: {}".format(view_response.content))
     # return success message (would be empty otherwise)
     if view_response.status_code == requests.codes.ok:
         return Response({'message': 'token revoked'},view_response.status_code)
